@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Tech Shop</title>
+    <style>
+        #chat-container {
+            max-width: 500px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border: 1px solid #ced4da;
+            border-radius: 10px; /* Bo cong các góc */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            font-family: 'Courgette', cursive;
+        }
+
+        #chat-container h1 {
+            text-align: center;
+            color: #007bff;
+        }
+
+        #chat-box {
+            overflow-y: scroll;
+            height: 300px;
+            border: 1px solid #ced4da;
+            border-radius: 10px; /* Bo cong các góc */
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #fff;
+        }
+
+        #user-input {
+            width: calc(100% - 70px);
+            padding: 10px;
+            border-radius: 10px; /* Bo cong các góc */
+            border: 1px solid #ced4da;
+            background-color: #fff;
+        }
+
+        #send-btn {
+            width: 70px;
+            padding: 10px;
+            border-radius: 10px; /* Bo cong các góc */
+            border: 1px solid #007bff;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .user-message {
+            text-align: left;
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 4px;
+            padding: 5px 10px;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+
+        .orion-message {
+            text-align: left;
+            background-color: #ced4da;
+            color: #000;
+            border-radius: 4px;
+            padding: 5px 10px;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+        
+        #send-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .message {
+            margin-bottom: 10px;
+        }
+
+        .user-message {
+            text-align: right;
+        }
+
+        .orion-message {
+            text-align: left;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="chat-container">
+        <h1>Trò chuyện cùng Orion</h1>
+        <div id="chat-box"></div>
+        <form id="chat-form">
+            <input type="text" id="user-input" name="user_input" placeholder="Nhập câu hỏi của bạn..." required>
+            <button type="submit" id="send-btn">Gửi</button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const chatForm = document.getElementById('chat-form');
+            const chatBox = document.getElementById('chat-box');
+
+            chatForm.addEventListener('submit', function (event) {
+                event.preventDefault();
+                const userInput = document.getElementById('user-input').value;
+                appendMessage('Bạn', userInput, 'user-message');
+                document.getElementById('user-input').value = '';
+
+                // Gửi yêu cầu XHR đến máy chủ
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '/chat', true);
+                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === XMLHttpRequest.DONE) {
+                        if (xhr.status === 200) {
+                            const response = xhr.responseText;
+                            appendMessage('Orion', response, 'orion-message');
+                        } else {
+                            appendMessage('Orion', 'Đã xảy ra lỗi khi gửi yêu cầu.', 'orion-message');
+                        }
+                    }
+                };
+                xhr.send('user_input=' + encodeURIComponent(userInput));
+            });
+
+            function appendMessage(sender, message, className) {
+                const messageDiv = document.createElement('div');
+                messageDiv.innerHTML = `<strong>${sender}:</strong> ${message}`;
+                messageDiv.classList.add('message', className);
+                chatBox.appendChild(messageDiv);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        });
+    </script>
+</body>
+</html>
