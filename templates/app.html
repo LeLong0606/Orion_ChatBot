@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orion</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 20px auto;
+            background-color: #fff;
+            border-radius: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            position: fixed;
+            /* Vị trí cố định trên màn hình */
+            bottom: 40px;
+            /* Khoảng cách từ dưới cùng của màn hình */
+            right: 120px;
+            /* Khoảng cách từ phải cùng của màn hình */
+        }
+
+        .header {
+            background-color: #6C7EE1;
+            color: #fff;
+            padding: 15px;
+            text-align: center;
+            font-size: 20px;
+        }
+
+        .chat-box {
+            padding: 20px;
+            overflow-y: scroll;
+            height: 400px;
+        }
+
+        .message {
+            background-color: #f0f2f5;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 15px;
+            clear: both;
+            max-width: 80%;
+        }
+
+        .message.sent {
+            background-color: #92B9E3;
+            color: #fff;
+            float: right;
+        }
+
+        .message.received {
+            background-color: #e5e5ea;
+            color: #000;
+            float: left;
+        }
+
+        .input-box {
+            display: flex;
+            align-items: center;
+            padding: 5px;
+            margin-bottom: 5px;
+            background-color: #f0f2f5;
+        }
+
+        .input-box input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 15px;
+            margin-right: 10px;
+        }
+
+        .input-box button {
+            padding: 10px;
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .input-box button:hover {
+            background-color: #e5e5ea;
+            border-radius: 50%;
+        }
+
+        .iconBot {
+            position: fixed;
+            /* Vị trí cố định trên màn hình */
+            bottom: 20px;
+            /* Khoảng cách từ dưới cùng của màn hình */
+            right: 20px;
+            /* Khoảng cách từ phải cùng của màn hình */
+            z-index: 999;
+            /* Đảm bảo thẻ này luôn hiển thị phía trên các phần khác */
+        }
+
+        .iconBot button {
+            background-color: transparent;
+            /* Nền trong suốt */
+            border: none;
+            /* Không có viền */
+            cursor: pointer;
+            /* Con trỏ chuột là pointer khi di chuyển qua */
+            transition: transform 0.3s;
+            /* Hiệu ứng chuyển động khi hover */
+        }
+
+        .iconBot button:hover {
+            transform: scale(1.1);
+            /* Kích thước phóng to khi hover */
+        }
+
+        .blue-chat {
+            position: fixed;
+            /* Vị trí cố định trên màn hình */
+            bottom: -200px;
+            /* Đẩy blue-chat xuống dưới màn hình */
+            right: 80px;
+            /* Khoảng cách từ phải cùng của màn hình */
+            transition: bottom 0.5s ease;
+            /* Hiệu ứng chuyển động */
+        }
+
+        .blue-chat.show {
+            bottom: 50px;
+            /* Hiển thị blue-chat khi được kích hoạt */
+        }
+
+        .blue-chat strong {
+            position: absolute;
+            /* Đặt vị trí tuyệt đối cho phần tử con */
+            top: 50%;
+            /* Đặt phần tử con nằm ở giữa theo chiều dọc */
+            left: 50%;
+            bottom: -5%;
+            /* Đặt phần tử con nằm ở giữa theo chiều ngang */
+            transform: translate(-50%, -50%);
+            /* Dịch chuyển phần tử con đi 50% của chính nó theo cả hai chiều */
+            text-align: center;
+            /* Canh giữa văn bản trong phần tử con */
+            color: rgb(14, 1, 1);
+            /* Màu chữ */
+        }
+
+        .blue-chat img {
+            display: block;
+            /* Đảm bảo hình ảnh được hiển thị như một khối */
+            width: 160px;
+            /* Đặt chiều rộng của hình ảnh */
+            height: 160px;
+            /* Đặt chiều cao của hình ảnh */
+        }
+    </style>
+</head>
+<html>
+
+<body>
+    <div class="container">
+        <div class="header">Orion</div>
+        <div class="chat-box" id="chat-box">
+            <div class="message received">Xin chào!</div>
+        </div>
+        <div class="input-box">
+            <button onclick="addAction()">
+                <img src="/templates/icon/plus.png" alt="plus" style="width: 30px; height: 30px;">
+            </button>
+            <button onclick="addPicture()">
+                <img src="/templates/icon/picture.png" alt="picture" style="width: 30px; height: 30px;">
+            </button>
+            <button onclick="addGif()">
+                <img src="/templates/icon/gif.png" alt="GIF Icon" style="width: 30px; height: 30px;">
+            </button>
+            <form id="chat-form" style="flex: 1; display: flex;">
+                <input type="text" id="message-input" name="message-input" placeholder="Nhập tin nhắn..."
+                    onkeypress="handleKeyPress(event)" style="width: 70%; padding: 10px; border-radius: 20px;" required>
+                <button type="submit" id="send-btn"
+                    style="background-color: transparent; border: none; cursor: pointer;">
+                    <img src="/templates/icon/send.png" alt="send" style="width: 30px; height: 30px;">
+                </button>
+            </form>
+            <input type="file" id="file-upload" style="display:none;">
+        </div>
+        <div class="recommendations">
+        </div>
+    </div>
+
+    <div class="blue-chat">
+        <div><strong>Xin chào tớ là Orion đây!</strong></div>
+        <img src="/templates/icon/bubble-chat.png" alt="picture">
+    </div>
+
+    <div class="iconBot" onclick="onOffChatBox()" onmouseover="showBlueChat()" onmouseleave="hideBlueChat()">
+        <button>
+            <img src="/templates/icon/robot.png" alt="GIF Icon" style="width: 80px; height: 80px;">
+        </button>
+    </div>
+
+</body>
+
+</html>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const chatForm = document.getElementById('chat-form');
+        const chatBox = document.getElementById('chat-box');
+
+        chatForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+            const userInput = document.getElementById('message-input').value;
+            appendMessage('You', userInput, 'sent');
+            document.getElementById('message-input').value = '';
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/chat', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        const response = xhr.responseText;
+                        appendMessage('Orion', response, 'received');
+                    } else {
+                        appendMessage('Orion', 'Đã xảy ra lỗi khi gửi yêu cầu.', 'received');
+                    }
+                }
+            };
+            xhr.send('user_input=' + encodeURIComponent(userInput));
+        });
+
+        function appendMessage(sender, message, className) {
+            const messageDiv = document.createElement('div');
+            messageDiv.textContent = `${message}`; // Thêm tên người gửi vào tin nhắn
+            messageDiv.classList.add('message', className);
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    });
+
+    // Xử lý khi trang web được tải
+    document.addEventListener("DOMContentLoaded", function () {
+        // Gửi yêu cầu GET đến /recommendations API endpoint
+        fetch('/recommendations')
+            .then(response => response.json())
+            .then(data => {
+                // Nếu dữ liệu được trả về thành công
+                if (data) {
+                    // Lặp qua mỗi phần tử trong dữ liệu và thêm vào trong thẻ <div class="recommendations">
+                    data.forEach(row => {
+                        const recommendationDiv = document.createElement('div');
+                        recommendationDiv.classList.add('recommendation');
+
+                        // Thêm CSS để tạo giao diện đẹp hơn
+                        recommendationDiv.style.display = 'inline-block'; // Hiển thị các phần tử theo hàng ngang
+                        recommendationDiv.style.padding = '10px';
+                        recommendationDiv.style.marginBottom = '10px';
+                        recommendationDiv.style.marginLeft = '5px';
+                        recommendationDiv.style.borderRadius = '15px';
+                        recommendationDiv.style.backgroundColor = '#92B9E3';
+                        recommendationDiv.style.cursor = 'pointer'; // Đổi con trỏ chuột khi hover vào
+                        recommendationDiv.style.whiteSpace = 'nowrap'; // Không tự động xuống hàng khi vượt quá chiều rộng
+                        recommendationDiv.style.overflow = 'hidden'; // Ẩn phần vượt quá chiều rộng
+                        recommendationDiv.style.textOverflow = 'ellipsis'; // Hiển thị dấu "..." nếu vượt quá chiều rộng
+                        recommendationDiv.style.marginRight = '10px'; // Thêm margin để ngăn cách giữa các thẻ div
+                        recommendationDiv.style.cursor = 'pointer'; // Đổi con trỏ chuột khi hover vào
+
+                        // Thêm sự kiện click để chuyển dữ liệu vào trong ô nhập tin nhắn
+                        recommendationDiv.addEventListener('click', function () {
+                            const userInput = row.join(' '); // Chuyển đổi mảng thành chuỗi
+                            document.getElementById('message-input').value = userInput;
+                        });
+
+                        // Hiển thị dữ liệu từ question_recommend_data
+                        let displayText = row.join(' '); // Chuyển đổi mảng thành chuỗi
+                        // Giới hạn độ dài của chuỗi và thêm dấu "..." nếu cần thiết
+                        if (displayText.length > 10) {
+                            displayText = displayText.substring(0, 10) + '...';
+                            recommendationDiv.setAttribute('title', row.join(' ')); // Thêm title để hiển thị nội dung đầy đủ khi di chuột
+                        }
+                        recommendationDiv.textContent = displayText;
+
+                        // Thêm vào trong thẻ <div class="recommendations">
+                        document.querySelector('.recommendations').appendChild(recommendationDiv);
+                    });
+                } else {
+                    // Nếu không có dữ liệu được trả về
+                    const noDataMessage = document.createElement('p');
+                    noDataMessage.textContent = "Không có dữ liệu để hiển thị.";
+                    document.querySelector('.recommendations').appendChild(noDataMessage);
+                }
+            })
+            .catch(error => {
+                console.error('Đã xảy ra lỗi:', error);
+            });
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        var container = document.querySelector('.container'); // Lấy thẻ container
+        container.style.display = 'none'; // Ẩn thẻ container
+    });
+
+    function onOffChatBox() {
+        var container = document.querySelector('.container');
+        if (container.style.display === 'none') {
+            container.style.display = 'block';
+        } else {
+            container.style.display = 'none';
+        }
+    }
+
+    function showBlueChat() {
+        document.querySelector('.blue-chat').classList.add('show');
+    }
+
+    function hideBlueChat() {
+        document.querySelector('.blue-chat').classList.remove('show');
+    }
+
+</script>
+</body>
+
+</html>
